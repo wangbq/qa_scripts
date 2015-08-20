@@ -32,11 +32,61 @@ class USBTTY:
         self.fd.write(command+'\r\n')
 
     def recv232(self):
-        buf=''
+        buf = ''
         while True:
             rbuf = self.fd.read(128)
             if (len(rbuf)!=0 and len(rbuf)>2):
                 buf = buf + rbuf[:-2]
                 break
             time.sleep(0.1)
+        return buf
+
+    def check232(self):
+        self.send232('!:')
+        buf = self.recv232()
+        if (buf[0]=='R'):
+            return True
+        else:
+            return False
+
+    def move_stage(self, pulses=[0,0,0,0]):
+        cmd = 'M:W'
+        for i in xrange(4):
+            if (pulses[i]>=0):
+                cmd = cmd + '+P'
+            elif (pulses[i]<0):
+                cmd = cmd + '-P'
+            cmd = cmd + ('%d' % abs(pulse[i]))
+        self.send232(cmd)
+        self.recv232()
+        self.send232('G:')
+        self.recv232()
+        self.check232()
+
+    def read_pico(self):
+        self.send232("FORM:ELEM READ")
+        self.send232("TRIG:COUN 5")
+        self.send232("TRAC:POIN 5")
+        self.send232("SENS:CURR:NPLC 1.0")
+        self.send232("TRAC:FEED SENS")
+        self.send232("TRAC:FEED:CONT NEXT")
+        time.sleep(0.2)
+        self.send232("INIT")
+        self.send232("CALC3:FORM MEAN")
+        self.send232("CALC3:DATA?")
+        buf = self.recv232()
+        return buf
+
+    def read_dmm(self):
+        self.send232("CONF:CURR:DC DEF")
+        self.send232("SAMP:COUN 5")
+        self.send232("TRIG:SOUR BUS")
+        self.send232("SENS:CURR:NPLC 1.0")
+        self.send232("CALC:FUNC AVER")
+        self.send232("CALC:STAT ON")
+        self.send232("INIT")
+        time.sleep(0.2)
+        self.send232("*TRG")
+        self.send232("CALC:AVER:AVER?")
+        buf = self.recv232()
         return buf
