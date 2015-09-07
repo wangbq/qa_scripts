@@ -4,7 +4,7 @@ class USBTTY:
     def __init__(self, device, termtype='PICODMM'):
         self.device = device
         self.termtype = termtype
-        self.fd = open(device, os.O_RDWR | O_NDELAY)
+        self.fd = os.open(device, os.O_RDWR | os.O_NDELAY)
         if (not os.isatty(self.fd)):
             close(self.fd)
             print "%s is not a tty" % device
@@ -29,12 +29,12 @@ class USBTTY:
         close(self.fd)
 
     def send232(self, command):
-        self.fd.write(command+'\r\n')
+        os.write(self.fd, command+'\r\n')
 
     def recv232(self):
         buf = ''
         while True:
-            rbuf = self.fd.read(128)
+            rbuf = os.read(self.fd, 128)
             if (len(rbuf)!=0 and len(rbuf)>2):
                 buf = buf + rbuf[:-2]
                 break
@@ -74,6 +74,7 @@ class USBTTY:
         self.send232("INIT")
         self.send232("CALC3:FORM MEAN")
         self.send232("CALC3:DATA?")
+        time.sleep(0.5)
         buf = self.recv232()
         return buf
 
@@ -88,5 +89,6 @@ class USBTTY:
         time.sleep(0.2)
         self.send232("*TRG")
         self.send232("CALC:AVER:AVER?")
+        time.sleep(0.5)
         buf = self.recv232()
         return buf
