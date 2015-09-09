@@ -26,7 +26,7 @@ class USBTTY:
         termios.tcsetattr(self.fd, termios.TCSANOW, ios)
 
     def close232(self):
-        close(self.fd)
+        os.close(self.fd)
 
     def send232(self, command):
         os.write(self.fd, command+'\r\n')
