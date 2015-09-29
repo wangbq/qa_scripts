@@ -1,26 +1,22 @@
 import math,os,sys
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 def sqsum(v):
-    s=0.0
-    for it in v:
-        s=s+it*it
-    return math.sqrt(s)
+    return reduce(lambda x,y:math.sqrt(x*x+y*y),v)
 
-if len(sys.argv)<2:
-    print "./ST.py data.txt"
-    sys.exit(1)
+parser = argparse.ArgumentParser(description='Process stability files.')
+parser.add_argument('filename', type=str, help='input filename')
+parser.add_argument('-o','--output',metavar='output', dest='output', type=str, help='save output image')
+args = parser.parse_args()
 
-filename=sys.argv[1]
 n=0
 mainpd=[]
 refpd=[]
-#files: 140219-1.txt 140220-1.txt 140220-4.txt
-for line in open(filename).readlines():
+for line in open(args.filename).readlines():
     if line[0]=='#':
         continue
-    #print line
     if n%5==0:
         mainpd.append([])
         refpd.append([])
@@ -69,6 +65,6 @@ f2.show()
 
 raw_input()
 
-if len(sys.argv)==3:
-    plt.savefig(sys.argv[2])
+if args.output!=None:
+    plt.savefig(args.output)
 
