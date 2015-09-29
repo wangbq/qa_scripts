@@ -56,7 +56,7 @@ class USBTTY:
                 cmd = cmd + '+P'
             elif (pulses[i]<0):
                 cmd = cmd + '-P'
-            cmd = cmd + ('%d' % abs(pulse[i]))
+            cmd = cmd + ('%d' % abs(pulses[i]))
         self.send232(cmd)
         self.recv232()
         self.send232('G:')

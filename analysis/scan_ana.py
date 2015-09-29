@@ -1,6 +1,7 @@
 import math,os,sys
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 def sqsum(v):
     return reduce(lambda x,y:math.sqrt(x*x+y*y),v)
@@ -58,6 +59,7 @@ class DataPoint:
 class Experiment:
     def __init__(self, filename, **kwargs):
         self.filename=filename
+        self.bar_no=os.path.abspath(filename).split('/')[-2]
         datalines=open(self.filename).readlines()
 
         for line in datalines:
@@ -127,6 +129,8 @@ class Experiment:
             dp.bt_err=bt_err
             self.plot_lines[i%self.rows-1].append(bt*100)
             self.plot_lines_err[i%self.rows-1].append(bt_err*100)
+        self.bt_result=[item.bt for item in self.data_points if hasattr(item,'bt')]
+        self.bt_result_filter=[item for item in self.bt_result if item>0.99]
     
     def ir_ana(self):
         self.plot_lines=[[] for j in xrange(self.rows)]
@@ -143,22 +147,29 @@ class Experiment:
             dp.corr=corr
             self.plot_lines[i%self.rows].append((ir-corr)*100)
             self.plot_lines_err[i%self.rows].append(ir_err*100)
+        self.ir_result=[item.ir for item in self.data_points if hasattr(item,'ir')]
+        self.ir_result_filter=[item for item in self.ir_result if item>0.9990]
 
     def report(self):
         print "scan type: ", self.scan_type
-        print "number of points: ", len(self.data_points)
+        print "total number of points: ", len(self.data_points)
         print "incident angle: ", self.degree, 'd', self.minute,'m'
         print "L0: ", self.L0
         print "L: ", self.L
         print "RR: ", self.RR
         if self.scan_type=='bt':
-            bt_result=[item.bt for item in self.data_points if hasattr(item,'bt')]
-            print "BT: ", np.mean(bt_result), ", RMS: ",np.std(bt_result)
+            print "BT: ", np.mean(self.bt_result), ", RMS: ",np.std(self.bt_result)
+            print "after filter (bt > 99.0%):"
+            print "number of points: ", len(self.bt_result_filter)
+            print "BT: ", np.mean(self.bt_result_filter), ", RMS: ", np.std(self.bt_result_filter)
         elif self.scan_type=='ir':
-            ir_result=[item.ir for item in self.data_points if hasattr(item,'ir')]
             print "bounce: ", self.bounce
+            print "reflection angle: ", 90-self.angle2/math.pi*180
             print "bulk: ", self.bulk
-            print "IR: ", np.mean(ir_result), ", RMS: ",np.std(ir_result)
+            print "IR: ", np.mean(self.ir_result), ", RMS: ",np.std(self.ir_result)
+            print "after filter (ir > 99.90%):"
+            print "number of points: ", len(self.ir_result_filter)
+            print "IR: ", np.mean(self.ir_result_filter), ", RMS: ", np.std(self.ir_result_filter)
 
     def plot(self):
         f0,ax0 = plt.subplots()
@@ -167,17 +178,18 @@ class Experiment:
             tick.label1.set_fontsize(14)
         for tick in ax0.yaxis.get_major_ticks():
             tick.label1.set_fontsize(14)
+        [i.set_linewidth(3) for i in ax0.spines.itervalues()]
 
         if self.scan_type=='bt':
             ax0.set_ylim([99,100])
             ax0.set_xlim([0,30])
-            ax0.set_title("Bulk Transmittance",fontsize=14,fontweight="bold")
+            ax0.set_title("Bar No. = %s, Bulk Transmittance = (%.2f +- %.2f) %%/m" % (self.bar_no, 100*np.mean(self.bt_result_filter),100*np.std(self.bt_result_filter)),fontsize=14,fontweight="bold")
             ax0.set_xlabel("Distance [cm]",fontsize=14,fontweight="bold")
             ax0.set_ylabel("BT [%/m]",fontsize=14,fontweight="bold")
         elif self.scan_type=='ir':
             ax0.set_ylim([99.90,100.02])
             ax0.set_xlim([0,30])
-            ax0.set_title("Internal Reflectivity",fontsize=14,fontweight="bold")
+            ax0.set_title("Bar No. = %s, Internal Reflectivity = (%.3f +- %.3f) %% for N = %s" % (self.bar_no, 100*np.mean(self.ir_result_filter),100*np.std(self.ir_result_filter), self.bounce),fontsize=14,fontweight="bold")
             ax0.set_xlabel("Distance [cm]",fontsize=14,fontweight="bold")
             ax0.set_ylabel("IR [%/m]",fontsize=14,fontweight="bold")
 
@@ -192,20 +204,30 @@ class Experiment:
             title_list.append("line%s" % (i+1))
 
         plt.legend(plot_list,title_list,fontsize=14)
-        f0.show()
+        if self.quiet==False:
+            f0.show()
+
+        if self.output!=None:
+            f0.savefig(self.output)
+
 
 if __name__=='__main__':
-    if len(sys.argv)<3:
-        print "Usage: scan_ana.py type filename"
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Process data files.')
+    parser.add_argument('filename', type=str, help='input filename')
+    parser.add_argument('-t','--type',metavar='type', dest='type', type=str, required=True,help='analysis type')
+    parser.add_argument('-o','--output',metavar='output', dest='output', type=str, help='analysis type')
+    parser.add_argument('-q','--quiet', dest='quiet',action='store_true',help='quiet mode')
 
-    if sys.argv[1] == 'bt':
-        exp=Experiment(filename=sys.argv[2],scan_type='bt',n1=1.00,n2=1.47,L0=1.25,f_s=0.5,repeat_read=10,rows=5,step_x=0.5,step_y=0.4)
-    elif sys.argv[1] == 'ir':
-        exp=Experiment(filename=sys.argv[2],scan_type='ir',n1=1.00,n2=1.47,L0=1.25,f_s=1.0,repeat_read=10,rows=4,step_x=0.5,step_y=0.4)
+    args = parser.parse_args()
+
+    if args.type == 'bt':
+        exp=Experiment(filename=args.filename,scan_type='bt',n1=1.00,n2=1.47,L0=1.25,f_s=0.5,repeat_read=10,rows=5,step_x=0.5,step_y=0.4,output=args.output,quiet=args.quiet)
+    elif args.type == 'ir':
+        exp=Experiment(filename=args.filename,scan_type='ir',n1=1.00,n2=1.47,L0=1.25,f_s=1.0,repeat_read=10,rows=4,step_x=0.5,step_y=0.4,output=args.output,quiet=args.quiet)
 
     exp.analyze()
-    exp.report()
     exp.plot()
-    raw_input()
+    if args.quiet==False:
+        exp.report()
+        raw_input()
 
