@@ -1,4 +1,4 @@
-import os,sys,termios,time
+import os,sys,termios,select
 
 class USBTTY:
     def __init__(self, device, termtype='PICODMM'):
@@ -29,25 +29,36 @@ class USBTTY:
         os.close(self.fd)
 
     def send232(self, command):
+        r,w,e = select.select([],[self.fd],[])
+        if self.fd not in w:
+            print "select error!"
+            sys.exit(-1)
         os.write(self.fd, command+'\r\n')
 
     def recv232(self):
-        buf = ''
+        buf=''
         while True:
+            r,w,e = select.select([self.fd],[],[])
+            if self.fd not in r:
+                print "select error!"
+                sys.exit(-1)
             rbuf = os.read(self.fd, 128)
-            if (len(rbuf)!=0 and len(rbuf)>2):
-                buf = buf + rbuf[:-2]
+            buf = buf + rbuf
+            if (len(buf)>2 and buf[-2:]=='\r\n'):
                 break
-            time.sleep(0.1)
-        return buf
+        return buf[:-2]
 
-    def check232(self):
-        self.send232('!:')
+    def ready(self):
+        while True:
+            self.send232('!:')
+            buf = self.recv232()
+            if (buf[0]=='R'):
+                break
+
+    def status(self):
+        self.send232('Q:')
         buf = self.recv232()
-        if (buf[0]=='R'):
-            return True
-        else:
-            return False
+        return buf
 
     def move_stage(self, pulses=[0,0,0,0]):
         cmd = 'M:W'
@@ -58,10 +69,14 @@ class USBTTY:
                 cmd = cmd + '-P'
             cmd = cmd + ('%d' % abs(pulses[i]))
         self.send232(cmd)
-        self.recv232()
+        if (self.recv232() != 'OK'):
+            print 'error sending command %s' % cmd
+            sys.exit(-1)
         self.send232('G:')
-        self.recv232()
-        self.check232()
+        if (self.recv232() != 'OK'):
+            print 'error sending command G:'
+            sys.exit(-1)
+        self.ready()
 
     def read_pico(self):
         self.send232("FORM:ELEM READ")
@@ -70,11 +85,9 @@ class USBTTY:
         self.send232("SENS:CURR:NPLC 1.0")
         self.send232("TRAC:FEED SENS")
         self.send232("TRAC:FEED:CONT NEXT")
-        time.sleep(0.2)
         self.send232("INIT")
         self.send232("CALC3:FORM MEAN")
         self.send232("CALC3:DATA?")
-        time.sleep(0.5)
         buf = self.recv232()
         return buf
 
@@ -86,9 +99,7 @@ class USBTTY:
         self.send232("CALC:FUNC AVER")
         self.send232("CALC:STAT ON")
         self.send232("INIT")
-        time.sleep(0.2)
         self.send232("*TRG")
         self.send232("CALC:AVER:AVER?")
-        time.sleep(0.5)
         buf = self.recv232()
         return buf
