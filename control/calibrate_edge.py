@@ -20,7 +20,7 @@ mpd=[]
 pos=[]
 for iii in xrange(nstep):
     control.move_all(step[0],step[1],step[2],step[3])
-    r=control.read_pico_dmm()
+    r=[time.strftime('%H:%M:%S',time.localtime(time.time())),control.read_pico(),control.read_dmm()]
     mpd.append(float(r[1])*1e6)
     x=control.global_lr[0]
     y=control.global_lr[1]
