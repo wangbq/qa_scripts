@@ -1,9 +1,8 @@
 import os,sys,termios,select
 
-class USBTTY:
-    def __init__(self, device, termtype='PICODMM'):
+class USBTTY(object):
+    def __init__(self, device):
         self.device = device
-        self.termtype = termtype
         self.fd = os.open(device, os.O_RDWR | os.O_NDELAY)
         if (not os.isatty(self.fd)):
             close(self.fd)
@@ -14,8 +13,6 @@ class USBTTY:
         ios[1] = ios[1] & 0
         ios[2] = ios[2] & 0
         ios[2] = ios[2] | termios.CS8
-        if (termtype=='STAGE'):
-            ios[2] = ios[2] | termios.CRTSCTS
         ios[2] = ios[2] | termios.CLOCAL
         ios[2] = ios[2] | termios.CREAD
         ios[3] = ios[3] & 0
@@ -48,6 +45,13 @@ class USBTTY:
                 break
         return buf[:-2]
 
+class STAGE(USBTTY):
+    def __init__(self, device):
+        super(STAGE, self).__init__(device)
+        ios = termios.tcgetattr(self.fd)
+        ios[2] = ios[2] | termios.CRTSCTS
+        termios.tcsetattr(self.fd, termios.TCSANOW, ios)
+
     def ready(self):
         while True:
             self.send232('!:')
@@ -78,7 +82,8 @@ class USBTTY:
             sys.exit(-1)
         self.ready()
 
-    def read_pico(self):
+class PICO(USBTTY):
+    def read(self):
         self.send232("FORM:ELEM READ")
         self.send232("TRIG:COUN 5")
         self.send232("TRAC:POIN 5")
@@ -91,7 +96,8 @@ class USBTTY:
         buf = self.recv232()
         return buf
 
-    def read_dmm(self):
+class DMM(USBTTY):
+    def read(self):
         self.send232("CONF:CURR:DC DEF")
         self.send232("SAMP:COUN 5")
         self.send232("TRIG:SOUR BUS")
