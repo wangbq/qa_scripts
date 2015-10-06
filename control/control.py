@@ -4,12 +4,22 @@ import usbtty
 
 max_read=1e-3
 
-pico=usbtty.PICO('/dev/ttyUSB0')
-dmm=usbtty.DMM('/dev/ttyUSB1')
-stage=usbtty.STAGE('/dev/ttyUSB2')
+pico=None
+dmm=None
+stage=None
 
 global_lr=[0,0]
 global_pd=[0,0]
+
+def initialize(pico_dev='/dev/ttyUSB0',dmm_dev='/dev/ttyUSB1',stage_dev='/dev/ttyUSB2'):
+    pico=usbtty.PICO(pico_dev)
+    dmm=usbtty.DMM(dmm_dev)
+    stage=usbtty.STAGE(stage_dev)
+
+def finalize():
+    pico.close232()
+    dmm.close232()
+    stage.close232()
 
 #all steps in micrometer (um)
 def move_lr(x,y):
@@ -22,12 +32,12 @@ def move_pd(x,y):
     global_pd[0]+=x
     global_pd[1]+=y
 
-def move_all(x1,x2,x3,x4):
-    stage.move_stage([x1,x2,x3,x4])
-    global_lr[0]+=x1
-    global_lr[1]+=x2
-    global_pd[0]+=x3
-    global_pd[1]+=x4
+def move_all(x):
+    stage.move_stage(x)
+    global_lr[0]+=x[0]
+    global_lr[1]+=x[1]
+    global_pd[0]+=x[2]
+    global_pd[1]+=x[3]
 
 def read_pico():
     r=pico.read().strip()
@@ -45,6 +55,12 @@ def read_dmm():
         print "read_dmm failed!"
         sys.exit(-1)
 
+def read_time_pico_dmm():
+    p=read_pico()
+    d=read_dmm()
+    t=time.strftime('%H:%M:%S',time.localtime(time.time()))
+    return [t,p,d]
+    
 def find_laser(steps=[(100, 500), (10, 50)], prev_move=(0,0,0,0)):
     ini_pos=(global_pd[0],global_pd[1])
     frac=0.5

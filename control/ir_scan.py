@@ -1,7 +1,8 @@
 import control
 import os,sys,math,time
 
-#os.system("sleep 120")
+#time.sleep(120)
+control.initialize()
 
 stage1=100
 stage2=100
@@ -54,13 +55,12 @@ f.write("#rat0: %s\n" % rat0)
 move_route=[]
 reflect=[]
 for i in xrange(len(scan_route)):
-    control.move_lr(scan_route[i][0],scan_route[i][1])
+    control.move_all(scan_route[i])
     print "move_lr: (%s,%s)" % (scan_route[i][0],scan_route[i][1])
-    control.move_pd(scan_route[i][2],scan_route[i][3])
     print "move_pd: (%s,%s)" % (scan_route[i][2],scan_route[i][3])
 
     if i==0:
-        print "initial one point"
+        print "first point"
         m=control.find_laser()
         #m=(0,0,0,0)
     else:
@@ -73,7 +73,7 @@ for i in xrange(len(scan_route)):
     mpd=[]
     rpd=[]
     for kkk in xrange(10):
-        r=[time.strftime('%H:%M:%S',time.localtime(time.time())),control.read_pico(),control.read_dmm()]
+        r=control.read_time_pico_dmm()
         mpd.append(float(r[1]))
         rpd.append(float(r[2]))
         print "%s %s %s %s %s %s %s %s %s" % (r[0],r[1],r[2],pos[0],pos[1],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1])
@@ -91,8 +91,7 @@ for i in xrange(len(scan_route)):
     move_route.append(m)
     print ""
 
-control.move_lr(-control.global_lr[0], -control.global_lr[1])
-control.move_pd(-control.global_pd[0], -control.global_pd[1])
+control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1])
 
 corr=Rs1*Rs1*math.pow(bulk,2*L)*math.pow(mean(reflect),2*bounce)/bounce
 #print "Correction: ",corr
@@ -102,4 +101,5 @@ f.write("#IR scan stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localt
 f.write("#---------------------------------------------------------------------------------\n")
 f.close()
 
+control.finalize()
 os.system("~/backup.sh")

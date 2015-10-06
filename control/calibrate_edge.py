@@ -2,6 +2,7 @@
 import control
 import time,math
 
+control.initialize()
 nstep=100 #number of steps
 
 #step=(10,0,10,0) #step for BT scan
@@ -19,8 +20,8 @@ f.write("#step: %s %s %s %s\n" % (step[0],step[1],step[2],step[3]))
 mpd=[]
 pos=[]
 for iii in xrange(nstep):
-    control.move_all(step[0],step[1],step[2],step[3])
-    r=[time.strftime('%H:%M:%S',time.localtime(time.time())),control.read_pico(),control.read_dmm()]
+    control.move_all(step)
+    r=control.read_time_pico_dmm()
     mpd.append(float(r[1])*1e6)
     x=control.global_lr[0]
     y=control.global_lr[1]
@@ -28,12 +29,12 @@ for iii in xrange(nstep):
     f.write("%s %s %s %s %s %s %s\n" % (r[0],r[1],r[2],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]))
     print r[0],r[1],r[2],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]
 
-control.move_lr(-control.global_lr[0], -control.global_lr[1])
-control.move_pd(-control.global_pd[0], -control.global_pd[1])
+control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1])
 
 f.write("#edge scan stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
 f.write("#---------------------------------------------------------------------------------\n")
 f.close()
+control.finalize()
 
 def avg(v):
     return sum(v)/len(v)
