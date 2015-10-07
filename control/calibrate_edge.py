@@ -28,7 +28,7 @@ for iii in xrange(nstep):
     f.write("%s %s %s %s %s %s %s\n" % (r[0],r[1],r[2],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]))
     print r[0],r[1],r[2],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]
 
-control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1])
+control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1]])
 
 f.write("#edge scan stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
 f.write("#---------------------------------------------------------------------------------\n")

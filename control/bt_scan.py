@@ -91,7 +91,7 @@ for i in xrange(len(scan_route)):
     move_route.append(m)
     print ""
 
-control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1])
+control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_pd[0], -control.global_pd[1]])
 
 print "Bulk Transmittance: ", mean(bulk), ", RMS: ", rms(bulk)
 print "Scan finished successfully!"
