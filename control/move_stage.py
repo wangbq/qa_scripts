@@ -19,6 +19,4 @@ if (argc>=9):
 
 print "pulses: ", pulses
 
-control.initialize()
 control.move_all(pulses)
-control.finalize()

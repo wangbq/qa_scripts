@@ -1,7 +1,6 @@
 #!/usr/bin/python 
 import control
 
-control.initialize()
 m=control.find_laser()
 pos=((m[0]+m[1])/2,(m[2]+m[3])/2)
 print "pos: %s %s" % (pos[0],pos[1])
@@ -23,5 +22,3 @@ rpd_mean=mean(rpd)
 print "Main:  ", mpd_mean
 print "Ref:   ", rpd_mean
 print "Ratio: ", mpd_mean/rpd_mean
-
-control.finalize()

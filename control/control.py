@@ -4,22 +4,12 @@ import usbtty
 
 max_read=1e-3
 
-pico=None
-dmm=None
-stage=None
+pico=usbtty.PICO("/dev/ttyUSB0")
+dmm=usbtty.DMM("/dev/ttyUSB1")
+stage=usbtty.STAGE("/dev/ttyUSB2")
 
 global_lr=[0,0]
 global_pd=[0,0]
-
-def initialize(pico_dev='/dev/ttyUSB0',dmm_dev='/dev/ttyUSB1',stage_dev='/dev/ttyUSB2'):
-    pico=usbtty.PICO(pico_dev)
-    dmm=usbtty.DMM(dmm_dev)
-    stage=usbtty.STAGE(stage_dev)
-
-def finalize():
-    pico.close232()
-    dmm.close232()
-    stage.close232()
 
 #all steps in micrometer (um)
 def move_lr(x,y):

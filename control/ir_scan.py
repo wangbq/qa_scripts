@@ -2,7 +2,6 @@ import control
 import os,sys,math,time
 
 #time.sleep(120)
-control.initialize()
 
 stage1=100
 stage2=100
@@ -101,5 +100,4 @@ f.write("#IR scan stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localt
 f.write("#---------------------------------------------------------------------------------\n")
 f.close()
 
-control.finalize()
 os.system("~/backup.sh")

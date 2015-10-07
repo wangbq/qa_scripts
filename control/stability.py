@@ -3,7 +3,6 @@ import os,time
 
 #time.sleep(120)
 
-control.initialize()
 filename="" #output filename
 hours=12 #number of hours
 repeat=5 #number of repeats per measurement
@@ -23,6 +22,5 @@ for i in xrange(60*hours):
 f.write("#Stability test stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
 f.write("#---------------------------------------------------------------------------------\n")
 f.close()
-control.finalize()
 
 os.system("~/backup.sh")

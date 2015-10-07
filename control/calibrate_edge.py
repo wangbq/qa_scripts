@@ -2,7 +2,6 @@
 import control
 import time,math
 
-control.initialize()
 nstep=100 #number of steps
 
 #step=(10,0,10,0) #step for BT scan
@@ -34,7 +33,6 @@ control.move_all([-control.global_lr[0], -control.global_lr[1], -control.global_
 f.write("#edge scan stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
 f.write("#---------------------------------------------------------------------------------\n")
 f.close()
-control.finalize()
 
 def avg(v):
     return sum(v)/len(v)
