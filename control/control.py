@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os,sys,time,re
+import os,sys,time,re,threading
 import usbtty
 
 max_read=1e-3
@@ -45,11 +45,25 @@ def read_dmm():
         print "read_dmm failed!"
         sys.exit(-1)
 
+def pico_worker(result):
+    r=read_pico()
+    result.append(r)
+
+def dmm_worker(result):
+    r=read_dmm()
+    result.append(r)
+
 def read_time_pico_dmm():
-    p=read_pico()
-    d=read_dmm()
+    result_pico=[]
+    result_dmm=[]
+    t_pico=threading.Thread(target=pico_worker, args=(result_pico,))
+    t_dmm=threading.Thread(target=dmm_worker, args=(result_dmm,))
+    t_pico.start()
+    t_dmm.start()
+    t_pico.join()
+    t_dmm.join()
     t=time.strftime('%H:%M:%S',time.localtime(time.time()))
-    return [t,p,d]
+    return [t,result_pico[0],result_dmm[0]]
     
 def find_laser(steps=[(100, 500), (10, 50)], prev_move=(0,0,0,0)):
     ini_pos=(global_pd[0],global_pd[1])
