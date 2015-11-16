@@ -173,7 +173,7 @@ class Experiment:
 
     def plot(self):
         f0,ax0 = plt.subplots()
-        f0.set_size_inches(16,12)
+        f0.set_size_inches(8,6)
         for tick in ax0.xaxis.get_major_ticks():
             tick.label1.set_fontsize(14)
         for tick in ax0.yaxis.get_major_ticks():
