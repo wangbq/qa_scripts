@@ -17,7 +17,7 @@ for i in xrange(60*hours):
         print "%s %s %s" % (r[0],r[1],r[2])
         f.write("%s %s %s\n" % (r[0],r[1],r[2]))
         f.flush()
-    time.sleep(53)
+    time.sleep(54)
 
 f.write("#Stability test stops at %s\n" % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
 f.write("#---------------------------------------------------------------------------------\n")

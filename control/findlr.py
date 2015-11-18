@@ -17,7 +17,7 @@ for kkk in xrange(10):
     mpd.append(float(r[1])*1e6)
     rpd.append(float(r[2])*1e6)
     if f!=None:
-        f.write("%s %s %s %s %s %s %s %s %s" % (r[0],r[1],r[2],pos[0],pos[1],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]))
+        f.write("%s %s %s %s %s %s %s %s %s\n" % (r[0],r[1],r[2],pos[0],pos[1],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1]))
     print "%s %s %s %s %s %s %s %s %s" % (r[0],r[1],r[2],pos[0],pos[1],control.global_lr[0],control.global_lr[1],control.global_pd[0],control.global_pd[1])
 control.move_pd(-pos[0],-pos[1])
 
@@ -31,5 +31,5 @@ print "Ref:   ", rpd_mean
 print "Ratio: ", mpd_mean/rpd_mean
 
 if f!=None:
-    f.write("#ratio: %s" % mpd_mean/rpd_mean)
+    f.write("#ratio: %s" % (mpd_mean/rpd_mean))
     f.close()
