@@ -1,9 +1,9 @@
 import control
-import os,time
+import sys,os,time
 
 #time.sleep(120)
 
-filename="" #output filename
+filename=sys.argv[1] #output filename
 hours=12 #number of hours
 repeat=5 #number of repeats per measurement
 

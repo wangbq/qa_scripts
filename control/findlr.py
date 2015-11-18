@@ -31,5 +31,5 @@ print "Ref:   ", rpd_mean
 print "Ratio: ", mpd_mean/rpd_mean
 
 if f!=None:
-    f.write("#ratio: %s" % (mpd_mean/rpd_mean))
+    f.write("#ratio: %s\n" % (mpd_mean/rpd_mean))
     f.close()
